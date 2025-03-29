@@ -1,0 +1,53 @@
+services:
+  app:
+    build:
+      context: .
+      target: production
+    container_name: python_template
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./src:/app/src:delegated"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - python_template-net
+
+  db:
+    image: postgres:17.4-bookworm
+    container_name: python_template_db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${APP_DB_NAME}
+      POSTGRES_USER: ${APP_DB_USER}
+      POSTGRES_PASSWORD: ${APP_DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - python_template-net
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "--username=${APP_DB_USER}",
+          "--host=localhost",
+          "--port=5432",
+          "--dbname=${APP_DB_NAME}",
+        ]
+      interval: 1s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  postgres_data:
+
+networks:
+  python_template-net:
+    driver: bridge

@@ -1,0 +1,48 @@
+[project]
+name = "python-template"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "alembic>=1.15.1",
+    "asyncpg>=0.30.0",
+    "fastapi[standard]>=0.115.11",
+    "orjson>=3.10.16",
+    "psycopg[binary]>=3.2.6",
+    "pydantic>=2.10.6",
+    "pydantic-settings>=2.8.1",
+    "sqlalchemy[asyncio]>=2.0.39",
+    "sqlmodel>=0.0.24",
+    "uuid6>=2024.7.10",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.2.0",
+    "pyright>=1.1.398",
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.25.3",
+    "pytest-cov>=6.0.0",
+    "pytest-mock>=3.14.0",
+    "ruff>=0.11.2",
+    "testcontainers[postgres]>=4.9.2",
+]
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+addopts = "--cov=src --cov-report=term-missing --cov-report=xml"
+testpaths = ["tests"]
+
+[tool.ruff]
+# Set the maximum line length to 99.
+line-length = 99
+
+[tool.ruff.lint]
+extend-select = ["E501"]
+
+[tool.pyright]
+reportMissingImports = "error"
+reportMissingTypeStubs = false
