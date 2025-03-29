@@ -40,3 +40,10 @@ ruff check . --fix
 # format all files
 ruff format .
 ```
+
+# setup pre-commit
+
+```shell
+pre-commit install -f
+pre-commit install --hook-type commit-msg
+```
