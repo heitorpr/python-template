@@ -1,4 +1,4 @@
-import time
+from datetime import datetime, timezone
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -30,12 +30,12 @@ async def override_db_session(db_session):
 @pytest.fixture()
 def auth_headers():
     def _auth_headers(method, body):
-        timestamp = str(int(time.time() * 1000))
+        timestamp = int(datetime.now(timezone.utc).timestamp() * 1000)
         signature = generate_signature(method, body, timestamp, settings.secret_key)
 
         return {
             "x-signature": signature,
-            "x-timestamp": timestamp,
+            "x-timestamp": str(timestamp),
             "Content-Type": "application/json",
         }
 

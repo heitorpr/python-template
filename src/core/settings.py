@@ -22,8 +22,12 @@ class Settings(BaseSettings):
     db_password: str = Field(default="password", title="Database password")
 
     # Api
-    timestamp_signing_threshold: int = Field(default=60000, title="Timestamp signing threshold")
+    timestamp_signing_threshold: int = Field(default=120000, title="Timestamp signing threshold")
     secret_key: str = Field(default="secret", title="Secret key for signing")
+
+    # App
+    name: str = Field(default="python_template", title="App name")
+    namespace: str = Field(default="personal", title="App namespace")
 
     @computed_field
     @property

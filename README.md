@@ -21,6 +21,18 @@ uv sync
 docker build --target=production . -t python_template
 ```
 
+# run project
+
+```shell
+docker compose up -d --build
+
+# remove project
+docker compose --profile '*' down
+
+# run project with debug
+docker compose --profile 'debug' up -d --build
+```
+
 # migrations
 
 ```shell

@@ -1,6 +1,6 @@
 import hashlib
 import hmac
-import time
+from datetime import datetime, timezone
 
 from fastapi import HTTPException, Request
 
@@ -14,9 +14,11 @@ async def _signing(request: Request):
     if not signature or not timestamp:
         raise HTTPException(status_code=401, detail="Missing signature or timestamp")
 
-    current_time = int(time.time() * 1000)
+    current_time = int(datetime.now(timezone.utc).timestamp() * 1000)
     if abs(current_time - int(timestamp)) > settings.timestamp_signing_threshold:
-        raise HTTPException(status_code=401, detail="Timestamp expired")
+        raise HTTPException(
+            status_code=401, detail=f"Timestamp expired: {abs(current_time - int(timestamp))} ms"
+        )
 
     content_type = request.headers.get("content-type", "").lower()
 

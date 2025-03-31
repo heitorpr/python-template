@@ -45,8 +45,61 @@ services:
       retries: 5
       start_period: 10s
 
+  prometheus:
+    image: prom/prometheus:latest
+    profiles: [debug, prometheus]
+    container_name: python_template_prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - python_template-net
+
+  grafana:
+    image: grafana/grafana:latest
+    profiles: [debug, grafana]
+    container_name: python_template_grafana
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    ports:
+      - "3001:3000"
+    networks:
+      - python_template-net
+
+  pgadmin:
+    image: dpage/pgadmin4
+    profiles: [debug, pgadmin]
+    container_name: python_template_pgadmin
+    restart: always
+    ports:
+      - 5050:80
+    volumes:
+      - ./pgadmin_servers.json:/pgadmin4/servers.json
+      - pgadmin_data:/var/lib/pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pythontemplate.com
+      PGADMIN_DEFAULT_PASSWORD: pythontemplate_admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    depends_on:
+      db:
+        condition: service_healthy
+    user: root
+    networks:
+      - python_template-net
+
 volumes:
   postgres_data:
+  prometheus_data:
+  grafana_data:
+  pgadmin_data:
 
 networks:
   python_template-net:
