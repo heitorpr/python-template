@@ -59,3 +59,13 @@ ruff format .
 pre-commit install -f
 pre-commit install --hook-type commit-msg
 ```
+
+# tests
+
+```shell
+# Run all tests
+pytest
+
+# Run stress tests
+locust -f .\scripts\locustfile.py
+```

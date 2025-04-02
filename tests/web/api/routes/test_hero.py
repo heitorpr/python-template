@@ -33,7 +33,7 @@ async def test_create_hero(client, hero_create, auth_headers):
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_get_hero(client, hero, auth_headers):
-    response = await client.get(f"/api/heroes/{hero.uuid}", headers=auth_headers("GET", ""))
+    response = await client.get(f"/api/heroes/{hero.uuid}", headers=auth_headers("GET", {}))
     assert response.status_code == 200
 
     hero_from_response = HeroPublic(**response.json())
@@ -61,8 +61,8 @@ async def test_update_hero(client, hero, auth_headers):
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_delete_hero(client, hero, auth_headers):
-    response = await client.delete(f"/api/heroes/{hero.uuid}", headers=auth_headers("DELETE", ""))
+    response = await client.delete(f"/api/heroes/{hero.uuid}", headers=auth_headers("DELETE", {}))
     assert response.status_code == 204
 
-    response = await client.get(f"/api/heroes/{hero.uuid}", headers=auth_headers("GET", ""))
+    response = await client.get(f"/api/heroes/{hero.uuid}", headers=auth_headers("GET", {}))
     assert response.status_code == 404
