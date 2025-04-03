@@ -1,22 +1,8 @@
 import pytest
 from sqlalchemy.exc import NoResultFound
 
-from src.domain.models.hero import HeroCreate, HeroPublic, HeroUpdate
+from src.domain.models.hero import HeroPublic, HeroUpdate
 from src.web.services import HeroService
-
-
-@pytest.fixture()
-async def hero_create():
-    return HeroCreate(
-        name="Test Hero",
-        secret_name="Test Secret Name",
-        age=30,
-    )
-
-
-@pytest.fixture()
-async def hero(hero_repository, hero_create):
-    return await hero_repository.create(hero_create)
 
 
 @pytest.mark.asyncio(loop_scope="session")

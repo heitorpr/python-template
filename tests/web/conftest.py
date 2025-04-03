@@ -5,10 +5,11 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from src.core.settings import settings
-from src.domain.repositories.hero import HeroRepository
 from src.web.api.signing import generate_signature
 from src.web.deps import get_db_session
 from src.web.main import app
+
+# Setup fixtures
 
 
 @pytest.fixture
@@ -42,8 +43,3 @@ def auth_headers():
         }
 
     return _auth_headers
-
-
-@pytest.fixture()
-def hero_repository(db_session):
-    return HeroRepository(session=db_session)

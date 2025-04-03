@@ -3,19 +3,27 @@ import random
 from datetime import datetime, timezone
 
 from faker import Faker
-from locust import HttpUser, between, task
+from locust import HttpUser, TaskSet, between, task
 
 from src.core.settings import settings
 from src.web.api.signing import generate_signature
 
-API_URL = "/api/heroes/"
-SECRET_KEY = settings.secret_key
 faker = Faker()
 
 
-class PythonTemplateLoadTest(HttpUser):
-    wait_time = between(1, 3)
+def get_headers(method, body):
+    timestamp = str(datetime.now(timezone.utc).timestamp() * 1000)
+    signature = generate_signature(method, body, timestamp, settings.secret_key)
 
+    headers = {
+        "x-signature": signature,
+        "x-timestamp": timestamp,
+        "Content-Type": "application/json",
+    }
+    return headers
+
+
+class HeroTasks(TaskSet):
     @task
     def create_hero(self):
         hero_data = {
@@ -24,18 +32,17 @@ class PythonTemplateLoadTest(HttpUser):
             "age": random.randint(18, 80),
         }
 
-        timestamp = str(datetime.now(timezone.utc).timestamp() * 1000)
-        signature = generate_signature("POST", json.dumps(hero_data), timestamp, SECRET_KEY)
+        headers = get_headers("POST", json.dumps(hero_data))
+        response = self.client.post("/api/heroes/", json=hero_data, headers=headers)
 
-        headers = {
-            "x-signature": signature,
-            "x-timestamp": timestamp,
-            "Content-Type": "application/json",
-        }
-
-        response = self.client.post(API_URL, json=hero_data, headers=headers)
         print(f"Status: {response.status_code}")
         try:
             print("Response:", response.json())
         except Exception as e:
             print("Error parsing response:", e)
+
+
+class PythonTemplateLoadTest(HttpUser):
+    tasks = [HeroTasks]
+    host = "http://localhost:8000"
+    wait_time = between(1, 3)
