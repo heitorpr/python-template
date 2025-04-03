@@ -67,5 +67,5 @@ pre-commit install --hook-type commit-msg
 pytest
 
 # Run stress tests
-locust -f .\scripts\locustfile.py
+locust -f .\scripts\locust\locustfile.py
 ```
