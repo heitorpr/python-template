@@ -33,9 +33,7 @@ class HeroTasks(TaskSet):
         }
 
         headers = get_headers("POST", json.dumps(hero_data))
-        response = self.client.post("/api/heroes/", json=hero_data, headers=headers)
-
-        print(f"Status: {response.status_code}")
+        self.client.post("/api/heroes/", json=hero_data, headers=headers)
 
     @task
     def get_hero(self):
@@ -48,13 +46,10 @@ class HeroTasks(TaskSet):
         headers = get_headers("POST", json.dumps(hero_data))
         response = self.client.post("/api/heroes/", json=hero_data, headers=headers)
 
-        response.json()
         hero_id = response.json().get("uuid")
 
         headers = get_headers("GET", "")
         response = self.client.get(f"/api/heroes/{hero_id}", headers=headers)
-
-        print(f"Status: {response.status_code}")
 
     @task
     def update_hero(self):
@@ -67,7 +62,6 @@ class HeroTasks(TaskSet):
         headers = get_headers("POST", json.dumps(hero_data))
         response = self.client.post("/api/heroes/", json=hero_data, headers=headers)
 
-        response.json()
         hero_id = response.json().get("uuid")
 
         hero_update_data = {
@@ -78,8 +72,6 @@ class HeroTasks(TaskSet):
         response = self.client.put(
             f"/api/heroes/{hero_id}", json=hero_update_data, headers=headers
         )
-
-        print(f"Status: {response.status_code}")
 
     @task
     def delete_hero(self):
@@ -92,10 +84,7 @@ class HeroTasks(TaskSet):
         headers = get_headers("POST", json.dumps(hero_data))
         response = self.client.post("/api/heroes/", json=hero_data, headers=headers)
 
-        response.json()
         hero_id = response.json().get("uuid")
 
         headers = get_headers("DELETE", "")
         response = self.client.delete(f"/api/heroes/{hero_id}", headers=headers)
-
-        print(f"Status: {response.status_code}")

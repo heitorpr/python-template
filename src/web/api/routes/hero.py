@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, status
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from src.domain.models.hero import HeroCreate, HeroPublic, HeroUpdate
 from src.web.deps import HeroServiceDep
@@ -18,7 +18,12 @@ router = APIRouter()
     status_code=status.HTTP_201_CREATED,
 )
 async def create_hero(hero_create: HeroCreate, service: HeroServiceDep):
-    return await service.create_hero(hero_create)
+    try:
+        return await service.create_hero(hero_create)
+    except IntegrityError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Hero already exists"
+        ) from error
 
 
 @router.get(
@@ -48,7 +53,14 @@ async def get_hero(uuid: UUID, service: HeroServiceDep):
     status_code=status.HTTP_200_OK,
 )
 async def update_hero(uuid: UUID, hero_update: HeroUpdate, service: HeroServiceDep):
-    return await service.update_hero(uuid, hero_update)
+    try:
+        return await service.update_hero(uuid, hero_update)
+    except IntegrityError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Hero already exists"
+        ) from error
+    except NoResultFound as error:
+        raise HTTPException(status_code=404, detail="Hero not found") from error
 
 
 @router.delete(
