@@ -20,12 +20,14 @@ class Settings(BaseSettings):
     db_host: str = Field(default="localhost", title="Database host")
     db_port: int = Field(default=5432, title="Database port")
     db_password: str = Field(default="password", title="Database password")
+    db_pool_size: int = Field(default=10, title="Database pool size")
 
     # Api
     timestamp_signing_threshold: int = Field(default=120000, title="Timestamp signing threshold")
     secret_key: str = Field(default="secret", title="Secret key for signing")
 
     # App
+    debug: bool = Field(default=True, title="Debug mode")
     name: str = Field(default="python_template", title="App name")
     namespace: str = Field(default="personal", title="App namespace")
 
