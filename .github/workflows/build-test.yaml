@@ -54,11 +54,11 @@ jobs:
 
       - name: Validate coverage is >= 99%
         run: |
-          total=$(xmllint --xpath "string(//coverage/@line-rate)" coverage.xml)
+          total=$(grep -oP 'line-rate="\K[0-9.]+' coverage.xml)
           percent=$(awk "BEGIN {printf \"%.2f\", $total * 100}")
           echo "Total coverage: $percent%"
           if (( $(echo "$percent < 99.0" | bc -l) )); then
-            echo "❌ Coverage is below 99%"
+            echo "❌ Coverage check failed — current coverage is ${percent}%, required is >= 99%"
             exit 1
           else
             echo "✅ Coverage check passed"
