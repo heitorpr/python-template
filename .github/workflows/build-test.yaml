@@ -52,14 +52,12 @@ jobs:
           name: coverage-report
           path: coverage.xml
 
-      - name: Validate coverage is >= 99%
-        run: |
-          total=$(grep -oP 'line-rate="\K[0-9.]+' coverage.xml)
-          percent=$(awk "BEGIN {printf \"%.2f\", $total * 100}")
-          echo "Total coverage: $percent%"
-          if (( $(echo "$percent < 99.0" | bc -l) )); then
-            echo "❌ Coverage check failed — current coverage is ${percent}%, required is >= 99%"
-            exit 1
-          else
-            echo "✅ Coverage check passed"
-          fi
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=heitorpr_python-template
+            -Dsonar.organization=heitorpr
+            -Dsonar.python.coverage.reportPaths=coverage.xml

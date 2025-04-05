@@ -1,3 +1,5 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=heitorpr_python-template&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=heitorpr_python-template)
+
 # setup uv
 
 ```shell
