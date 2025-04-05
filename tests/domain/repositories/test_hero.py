@@ -1,17 +1,8 @@
 import pytest
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from src.domain.models.hero import HeroCreate, HeroUpdate
+from src.domain.models.hero import HeroUpdate
 from src.domain.repositories.hero import HeroRepository
-
-
-@pytest.fixture()
-async def hero_create():
-    return HeroCreate(
-        name="Test Hero",
-        secret_name="Test Secret Name",
-        age=30,
-    )
 
 
 @pytest.mark.asyncio(loop_scope="session")

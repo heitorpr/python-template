@@ -5,14 +5,13 @@ from fastapi import HTTPException
 from starlette.requests import Request
 
 from src.core.settings import settings
-from src.web.api.signing import signing
-from tests.utils.signing import generate_signature
+from src.web.api.signing import generate_signature, signing
 
 
-async def create_request(method, body, timestamp, signature, content_type="application/json"):
+async def create_request(method, body, timestamp: str, signature, content_type="application/json"):
     headers = {
         "x-signature": signature,
-        "x-timestamp": str(timestamp),
+        "x-timestamp": timestamp,
         "content-type": content_type,
     }
     scope = {
@@ -26,7 +25,7 @@ async def create_request(method, body, timestamp, signature, content_type="appli
 
 
 async def test_valid_request():
-    timestamp = int(time.time() * 1000)
+    timestamp = str(time.time() * 1000)
     body = "test_body"
     signature = generate_signature("POST", body, timestamp, settings.secret_key)
     request = await create_request("POST", body, timestamp, signature)
@@ -34,7 +33,7 @@ async def test_valid_request():
 
 
 async def test_missing_signature():
-    timestamp = int(time.time() * 1000)
+    timestamp = str(time.time() * 1000)
     request = await create_request("POST", "test_body", timestamp, "")
     with pytest.raises(HTTPException) as exc:
         await signing(request)
@@ -44,7 +43,7 @@ async def test_missing_signature():
 
 async def test_missing_timestamp():
     signature = generate_signature(
-        "POST", "test_body", int(time.time() * 1000), settings.secret_key
+        "POST", "test_body", str(time.time() * 1000), settings.secret_key
     )
     request = await create_request("POST", "test_body", "", signature)
     with pytest.raises(HTTPException) as exc:
@@ -54,7 +53,7 @@ async def test_missing_timestamp():
 
 
 async def test_expired_timestamp():
-    old_timestamp = int(time.time() * 1000) - (settings.timestamp_signing_threshold + 1000)
+    old_timestamp = str(float(time.time() * 1000) - (settings.timestamp_signing_threshold + 1000))
     signature = generate_signature("POST", "test_body", old_timestamp, settings.secret_key)
     request = await create_request("POST", "test_body", old_timestamp, signature)
     with pytest.raises(HTTPException) as exc:
@@ -64,7 +63,7 @@ async def test_expired_timestamp():
 
 
 async def test_invalid_signature():
-    timestamp = int(time.time() * 1000)
+    timestamp = str(time.time() * 1000)
     request = await create_request("POST", "test_body", timestamp, "invalid_signature")
     with pytest.raises(HTTPException) as exc:
         await signing(request)
@@ -74,7 +73,7 @@ async def test_invalid_signature():
 
 
 async def test_multipart_form_data():
-    timestamp = int(time.time() * 1000)
+    timestamp = str(time.time() * 1000)
     signature = generate_signature("POST", "formData", timestamp, settings.secret_key)
     request = await create_request("POST", "formData", timestamp, signature, "multipart/form-data")
     await signing(request)

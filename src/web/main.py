@@ -6,6 +6,7 @@ from fastapi.responses import ORJSONResponse
 from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from src.core.db import async_engine
 from src.core.settings import settings
 from src.web.api import api_router
 from src.web.api.signing import signing
@@ -33,7 +34,8 @@ class SignatureMiddleware(BaseHTTPMiddleware):
 async def lifespan(app: FastAPI):
     prometheus_inst.expose(app)
     yield
-    # Cleanup code can be added here if needed
+    # Cleanup idle connections
+    await async_engine.dispose()
 
 
 app = FastAPI(

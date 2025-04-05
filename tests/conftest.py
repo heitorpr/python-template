@@ -6,6 +6,8 @@ from testcontainers.postgres import PostgresContainer
 
 # ruff: noqa: F403
 from src.domain.models import *
+from src.domain.models.hero import HeroCreate
+from src.domain.repositories.hero import HeroRepository
 
 """
 This file contains fixtures that are shared across all tests.
@@ -84,3 +86,28 @@ async def db_session(session_local):
 
 
 # --- End database fixtures ---
+
+
+# --- Domain fixtures ---
+
+
+@pytest.fixture()
+def hero_repository(db_session):
+    return HeroRepository(session=db_session)
+
+
+@pytest.fixture()
+async def hero_create():
+    return HeroCreate(
+        name="Test Hero",
+        secret_name="Test Secret Name",
+        age=30,
+    )
+
+
+@pytest.fixture()
+async def hero(hero_repository, hero_create):
+    return await hero_repository.create(hero_create)
+
+
+# --- End domain fixtures ---

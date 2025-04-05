@@ -14,28 +14,15 @@ async def _signing(request: Request):
     if not signature or not timestamp:
         raise HTTPException(status_code=401, detail="Missing signature or timestamp")
 
-    current_time = int(datetime.now(timezone.utc).timestamp() * 1000)
-    if abs(current_time - int(timestamp)) > settings.timestamp_signing_threshold:
-        raise HTTPException(
-            status_code=401, detail=f"Timestamp expired: {abs(current_time - int(timestamp))} ms"
-        )
+    current_time = datetime.now(timezone.utc).timestamp() * 1000
+    if abs(current_time - float(timestamp)) > settings.timestamp_signing_threshold:
+        raise HTTPException(status_code=401, detail="Timestamp expired")
 
-    content_type = request.headers.get("content-type", "").lower()
+    body = await request.body()
 
-    body = (
-        "formData"
-        if "multipart/form-data" in content_type or "application/octet-stream" in content_type
-        else await request.body()
+    calculated_signature = generate_signature(
+        request.method, body.decode(), timestamp, settings.secret_key
     )
-
-    body_decoded = body.decode() if isinstance(body, bytes) else str(body)
-
-    method = request.method
-    payload = f"{method}|{'formData' if body == 'formData' else body_decoded}|{timestamp}"
-
-    calculated_signature = hmac.new(
-        settings.secret_key.encode(), payload.encode(), hashlib.sha256
-    ).hexdigest()
 
     if calculated_signature != signature:
         raise HTTPException(status_code=401, detail="Invalid signature")
@@ -43,3 +30,8 @@ async def _signing(request: Request):
 
 async def signing(request: Request):
     await _signing(request)
+
+
+def generate_signature(method: str, body: str, timestamp: str, secret_key):
+    payload = f"{method}|{body}|{timestamp}"
+    return hmac.new(secret_key.encode(), payload.encode(), hashlib.sha256).hexdigest()

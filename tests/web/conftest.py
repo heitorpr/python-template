@@ -1,13 +1,15 @@
+import json
 from datetime import datetime, timezone
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 
 from src.core.settings import settings
-from src.domain.repositories.hero import HeroRepository
+from src.web.api.signing import generate_signature
 from src.web.deps import get_db_session
 from src.web.main import app
-from tests.utils.signing import generate_signature
+
+# Setup fixtures
 
 
 @pytest.fixture
@@ -29,19 +31,15 @@ async def override_db_session(db_session):
 
 @pytest.fixture()
 def auth_headers():
-    def _auth_headers(method, body):
-        timestamp = int(datetime.now(timezone.utc).timestamp() * 1000)
-        signature = generate_signature(method, body, timestamp, settings.secret_key)
+    def _auth_headers(method: str, body: dict):
+        timestamp = str(datetime.now(timezone.utc).timestamp() * 1000)
+        str_body = json.dumps(body, separators=(",", ":")) if body else ""
+        signature = generate_signature(method, str_body, timestamp, settings.secret_key)
 
         return {
             "x-signature": signature,
-            "x-timestamp": str(timestamp),
+            "x-timestamp": timestamp,
             "Content-Type": "application/json",
         }
 
     return _auth_headers
-
-
-@pytest.fixture()
-def hero_repository(db_session):
-    return HeroRepository(session=db_session)
