@@ -1,6 +1,6 @@
 import pytest
 from fastapi import status
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from src.domain.models.hero import HeroPublic, HeroUpdate
 from src.web.deps.services import get_hero_service
@@ -76,5 +76,73 @@ async def test_get_hero_not_found(client, auth_headers, mocker):
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json() == {"detail": "Hero not found"}
+
+    app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio(loop_scope="session")
+async def test_create_hero_integrity_error(client, hero_create, auth_headers, mocker):
+    service_mock = mocker.MagicMock(HeroService)
+    service_mock.create_hero.side_effect = IntegrityError(
+        statement="insert into heroes ...", params=None, orig=Exception()
+    )
+
+    def _override():
+        return service_mock
+
+    app.dependency_overrides[get_hero_service] = _override
+
+    body = hero_create.model_dump(mode="json")
+    response = await client.post("/api/heroes/", json=body, headers=auth_headers("POST", body))
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {"detail": "Hero already exists"}
+
+    app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio(loop_scope="session")
+async def test_update_hero_not_found(client, auth_headers, mocker):
+    service_mock = mocker.MagicMock(HeroService)
+    service_mock.update_hero.side_effect = NoResultFound()
+
+    def _override():
+        return service_mock
+
+    app.dependency_overrides[get_hero_service] = _override
+
+    non_existent_uuid = "123e4567-e89b-12d3-a456-426614174000"
+    hero_update = HeroUpdate(age=22)
+    body = hero_update.model_dump(mode="json", exclude_unset=True)
+    response = await client.put(
+        f"/api/heroes/{non_existent_uuid}", json=body, headers=auth_headers("PUT", body)
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json() == {"detail": "Hero not found"}
+
+    app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio(loop_scope="session")
+async def test_update_hero_integrity_error(client, auth_headers, mocker):
+    service_mock = mocker.MagicMock(HeroService)
+    service_mock.update_hero.side_effect = IntegrityError(
+        statement="update heroes ...", params=None, orig=Exception()
+    )
+
+    def _override():
+        return service_mock
+
+    app.dependency_overrides[get_hero_service] = _override
+
+    hero_update = HeroUpdate(age=22)
+    body = hero_update.model_dump(mode="json", exclude_unset=True)
+
+    response = await client.put(
+        "/api/heroes/123e4567-e89b-12d3-a456-426614174000",
+        json=body,
+        headers=auth_headers("PUT", body),
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {"detail": "Hero already exists"}
 
     app.dependency_overrides.clear()
