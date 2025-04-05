@@ -1,0 +1,77 @@
+name: Build and test
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Run Tests with Testcontainers
+    runs-on: ubuntu-latest
+
+    services:
+      docker:
+        image: docker:24.0.7
+        options: >-
+          --privileged
+
+    env:
+      UV_CACHE_DIR: .uv-cache
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: yezz123/setup-uv@v4
+        with:
+          uv-version: "latest"
+
+      - name: Cache uv dependencies
+        uses: actions/cache@v4
+        with:
+          path: .uv-cache
+          key: uv-${{ runner.os }}-${{ hashFiles('pyproject.toml', 'uv.lock') }}
+          restore-keys: |
+            uv-${{ runner.os }}-
+
+      - name: Install dependencies with uv
+        run: |
+          uv venv
+          source .venv/bin/activate
+          uv pip install -e . -r <(uv pip compile --group dev)
+
+      - name: Set Docker host for Testcontainers
+        run: |
+          echo "DOCKER_HOST=unix:///var/run/docker.sock" >> $GITHUB_ENV
+
+      - name: Run ruff (lint)
+        run: |
+          source .venv/bin/activate
+          ruff check .
+
+      - name: Run pyright (type check)
+        run: |
+          source .venv/bin/activate
+          pyright
+
+      - name: Run tests with pytest
+        run: |
+          source .venv/bin/activate
+          pytest
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
