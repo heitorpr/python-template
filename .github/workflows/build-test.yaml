@@ -52,12 +52,7 @@ jobs:
           name: coverage-report
           path: coverage.xml
 
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.projectKey=heitorpr_python-template
-            -Dsonar.organization=heitorpr
-            -Dsonar.python.coverage.reportPaths=coverage.xml
