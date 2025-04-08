@@ -33,26 +33,30 @@ class Settings(BaseSettings):
 
     @computed_field
     @property
-    def db_dsn_sync(self) -> PostgresDsn:
-        return PostgresDsn.build(
-            scheme="postgresql+psycopg",
-            username=self.db_user,
-            password=self.db_password,
-            host=self.db_host,
-            port=self.db_port,
-            path=self.db_name,
+    def db_dsn_sync(self) -> str:
+        return str(
+            PostgresDsn.build(
+                scheme="postgresql+psycopg",
+                username=self.db_user,
+                password=self.db_password,
+                host=self.db_host,
+                port=self.db_port,
+                path=self.db_name,
+            )
         )
 
     @computed_field
     @property
-    def db_dsn_async(self) -> PostgresDsn:
-        return PostgresDsn.build(
-            scheme="postgresql+asyncpg",
-            username=self.db_user,
-            password=self.db_password,
-            host=self.db_host,
-            port=self.db_port,
-            path=self.db_name,
+    def db_dsn_async(self) -> str:
+        return str(
+            PostgresDsn.build(
+                scheme="postgresql+asyncpg",
+                username=self.db_user,
+                password=self.db_password,
+                host=self.db_host,
+                port=self.db_port,
+                path=self.db_name,
+            )
         )
 
 

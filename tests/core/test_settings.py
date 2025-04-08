@@ -22,7 +22,8 @@ def set_envs(mocker):
     return mocker
 
 
-def test_case_insensitive_env_vars(set_envs):
+@pytest.mark.usefixtures("set_envs")
+def test_case_insensitive_env_vars():
     settings = Settings()
 
     assert settings.db_user == "testuser"
@@ -43,19 +44,19 @@ def test_invalid_port_value(mocker):
         Settings()
 
 
-def test_db_dsn_sync(set_envs):
+@pytest.mark.usefixtures("set_envs")
+def test_db_dsn_sync():
     settings = Settings()
 
     assert (
-        str(settings.db_dsn_sync)
-        == "postgresql+psycopg://testuser:testpassword@testhost:1234/testdb"
+        settings.db_dsn_sync == "postgresql+psycopg://testuser:testpassword@testhost:1234/testdb"
     )
 
 
-def test_db_dsn_async(set_envs):
+@pytest.mark.usefixtures("set_envs")
+def test_db_dsn_async():
     settings = Settings()
 
     assert (
-        str(settings.db_dsn_async)
-        == "postgresql+asyncpg://testuser:testpassword@testhost:1234/testdb"
+        settings.db_dsn_async == "postgresql+asyncpg://testuser:testpassword@testhost:1234/testdb"
     )

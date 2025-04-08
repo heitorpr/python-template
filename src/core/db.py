@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from .settings import settings
 
 async_engine = create_async_engine(
-    str(settings.db_dsn_async),
+    settings.db_dsn_async,
     echo=settings.debug,
     pool_size=settings.db_pool_size,  # number of connections to keep in the pool
     max_overflow=0,  # no overflow connections
