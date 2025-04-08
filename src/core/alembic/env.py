@@ -7,6 +7,7 @@ from sqlmodel import SQLModel
 from src.core.settings import settings
 
 # ruff: noqa: F403
+# sonarignore: python:S2208
 from src.domain.models import *
 
 # this is the Alembic Config object, which provides

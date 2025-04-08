@@ -5,6 +5,7 @@ from sqlmodel import SQLModel
 from testcontainers.postgres import PostgresContainer
 
 # ruff: noqa: F403
+# sonarignore: python:S2208
 from src.domain.models import *
 from src.domain.models.hero import HeroCreate
 from src.domain.repositories.hero import HeroRepository
