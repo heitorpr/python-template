@@ -24,7 +24,7 @@ target_metadata = SQLModel.metadata
 
 
 def get_url():
-    return str(settings.db_dsn_sync)
+    return settings.db_dsn_sync
 
 
 def run_migrations_offline() -> None:
