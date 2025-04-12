@@ -8,7 +8,8 @@ from testcontainers.postgres import PostgresContainer
 # sonarignore: python:S2208
 from src.domain.models import *
 from src.domain.models.hero import HeroCreate
-from src.domain.repositories.hero import HeroRepository
+from src.domain.models.team import TeamCreate
+from src.domain.repositories import HeroRepository, TeamRepository
 
 """
 This file contains fixtures that are shared across all tests.
@@ -98,7 +99,12 @@ def hero_repository(db_session):
 
 
 @pytest.fixture()
-async def hero_create():
+def team_repository(db_session):
+    return TeamRepository(session=db_session)
+
+
+@pytest.fixture()
+def hero_create():
     return HeroCreate(
         name="Test Hero",
         secret_name="Test Secret Name",
@@ -107,8 +113,21 @@ async def hero_create():
 
 
 @pytest.fixture()
+def team_create():
+    return TeamCreate(
+        name="Test Team",
+        headquarters="Test Headquarters",
+    )
+
+
+@pytest.fixture()
 async def hero(hero_repository, hero_create):
     return await hero_repository.create(hero_create)
+
+
+@pytest.fixture()
+async def team(team_repository, team_create):
+    return await team_repository.create(team_create)
 
 
 # --- End domain fixtures ---

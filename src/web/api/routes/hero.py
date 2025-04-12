@@ -1,9 +1,10 @@
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, status
-from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.exc import IntegrityError
 
 from src.domain.models.hero import HeroCreate, HeroPublic, HeroUpdate
+from src.domain.repositories.exceptions import NoHeroFound, NoTeamFound
 from src.web.deps import HeroServiceDep
 
 router = APIRouter()
@@ -16,6 +17,10 @@ router = APIRouter()
     tags=["heroes"],
     response_model=HeroPublic,
     status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_400_BAD_REQUEST: {"description": "Hero already exists"},
+        status.HTTP_404_NOT_FOUND: {"description": "Team not found"},
+    },
 )
 async def create_hero(hero_create: HeroCreate, service: HeroServiceDep):
     try:
@@ -24,6 +29,8 @@ async def create_hero(hero_create: HeroCreate, service: HeroServiceDep):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Hero already exists"
         ) from error
+    except NoTeamFound as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
 
 
 @router.get(
@@ -40,8 +47,8 @@ async def create_hero(hero_create: HeroCreate, service: HeroServiceDep):
 async def get_hero(uuid: UUID, service: HeroServiceDep):
     try:
         return await service.get_hero(uuid)
-    except NoResultFound as error:
-        raise HTTPException(status_code=404, detail="Hero not found") from error
+    except NoHeroFound as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
 
 
 @router.put(
@@ -51,6 +58,10 @@ async def get_hero(uuid: UUID, service: HeroServiceDep):
     tags=["heroes"],
     response_model=HeroPublic,
     status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_400_BAD_REQUEST: {"description": "Hero already exists"},
+        status.HTTP_404_NOT_FOUND: {"description": "Hero not found"},
+    },
 )
 async def update_hero(uuid: UUID, hero_update: HeroUpdate, service: HeroServiceDep):
     try:
@@ -59,8 +70,8 @@ async def update_hero(uuid: UUID, hero_update: HeroUpdate, service: HeroServiceD
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Hero already exists"
         ) from error
-    except NoResultFound as error:
-        raise HTTPException(status_code=404, detail="Hero not found") from error
+    except (NoHeroFound, NoTeamFound) as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
 
 
 @router.delete(
@@ -69,6 +80,12 @@ async def update_hero(uuid: UUID, hero_update: HeroUpdate, service: HeroServiceD
     description="Delete a hero using the uuid",
     tags=["heroes"],
     status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        status.HTTP_404_NOT_FOUND: {"description": "Hero not found"},
+    },
 )
 async def delete_hero(uuid: UUID, service: HeroServiceDep):
-    await service.delete_hero(uuid)
+    try:
+        await service.delete_hero(uuid)
+    except NoHeroFound as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
