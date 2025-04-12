@@ -24,4 +24,4 @@ class TeamUpdate(SQLModel):
 
 
 class TeamPublic(TeamBase):
-    uuid: UUID = Field(title="Team UUID")
+    uuid: UUID = Field()

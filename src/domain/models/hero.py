@@ -20,20 +20,16 @@ class Hero(HeroBase, table=True):
 
 
 class HeroCreate(HeroBase):
-    team_uuid: UUID | None = Field(
-        default=None, title="Team UUID", description="Optional field to link to a team"
-    )
+    team_uuid: UUID | None = Field(default=None, description="Optional field to link to a team")
 
 
 class HeroUpdate(SQLModel):
     name: str | None = Field(default=None, title="Hero name")
     secret_name: str | None = Field(default=None, title="Hero secret name")
     age: int | None = Field(default=None, title="Hero age")
-    team_uuid: UUID | None = Field(
-        default=None, title="Team UUID", description="Optional field to link to a team"
-    )
+    team_uuid: UUID | None = Field(default=None, description="Optional field to link to a team")
 
 
 class HeroPublic(HeroBase):
-    uuid: UUID = Field(title="Hero UUID")
-    team_uuid: UUID | None = Field(nullable=True, title="Team UUID")
+    uuid: UUID = Field()
+    team_uuid: UUID | None = Field(nullable=True)
