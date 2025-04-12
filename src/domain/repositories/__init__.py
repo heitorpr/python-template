@@ -7,6 +7,7 @@ real world, like user.
 It concerns only in operating with the data, not how it is stored or presented.
 """
 
-__all__ = ["HeroRepository"]
+__all__ = ["HeroRepository", "TeamRepository"]
 
 from .hero import HeroRepository
+from .team import TeamRepository
